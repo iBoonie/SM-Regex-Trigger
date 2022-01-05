@@ -2,8 +2,8 @@
 #pragma newdecls required
 
 #define PLUGIN_DESCRIPTION "Regex triggers for names, chat, and commands."
-#define PLUGIN_VERSION "2.5.12"
-#define MAX_EXPRESSION_LENGTH 512
+#define PLUGIN_VERSION "2.5.13"
+#define MAX_EXPRESSION_LENGTH 5120
 #define MATCH_SIZE 64
 
 // Define created to use settings specifically for my own servers.
@@ -864,9 +864,12 @@ Action CheckClientName(int client, char[] newName, int size, bool connecting = f
 		char _newName[MAX_NAME_LENGTH * 2 + 1];
 		strcopy(_newName, sizeof(_newName), newName);
 		Discord_EscapeString(_newName, sizeof(_newName));
+		
+		char steamID2[24];
+		GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2));
 
 		char output[192];
-		FormatEx(output, sizeof(output), "**%s** `%s`  -->  `%s`", g_sServerName, unfilteredName, _newName);
+		FormatEx(output, sizeof(output), "**%s** (%s) `%s`  -->  `%s`", g_sServerName, steamID2, unfilteredName, _newName);
 
 		Discord_SendMessage(g_sNameChannel, output);
 	}
@@ -879,6 +882,9 @@ Action CheckClientName(int client, char[] newName, int size, bool connecting = f
 Action CheckClientMessage(int client, const char[] command, const char[] text) {
 	char message[128];
 	strcopy(message, sizeof(message), text);
+
+	char steamID2[24];
+	GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2));
 
 	ArrayList chatSections = g_aSections[CHAT];
 
@@ -958,10 +964,10 @@ Action CheckClientMessage(int client, const char[] command, const char[] text) {
 
 					char output[256];
 					if (changed) {
-						Format(output, sizeof(output), "**%s** %s: `%s` --> `%s` **Blocked**", g_sServerName, clientName, text, _message);
+						Format(output, sizeof(output), "**%s** (%s) %s: `%s` --> `%s` **Blocked**", g_sServerName, steamID2, clientName, text, _message);
 					}
 					else {
-						Format(output, sizeof(output), "**%s** %s: `%s`", g_sServerName, clientName, _message);
+						Format(output, sizeof(output), "**%s** (%s) %s: `%s`", g_sServerName, steamID2, clientName, _message);
 					}
 
 					Discord_SendMessage(g_sChatChannel, output);
@@ -1007,7 +1013,7 @@ Action CheckClientMessage(int client, const char[] command, const char[] text) {
 			Discord_EscapeString(_message, sizeof(_message));
 
 			char output[256];
-			Format(output, sizeof(output), "**%s** %s: `%s`  -->  `%s`", g_sServerName, clientName, originalmessage, _message);
+			Format(output, sizeof(output), "**%s** (%s) %s: `%s`  -->  `%s`", g_sServerName, steamID2, clientName, originalmessage, _message);
 
 			Discord_SendMessage(g_sChatChannel, output);
 		}
@@ -1024,7 +1030,7 @@ Action CheckClientMessage(int client, const char[] command, const char[] text) {
 		Discord_EscapeString(message, sizeof(message));
 
 		char output[256];
-		Format(output, sizeof(output), "**%s** %s: `%s`", g_sServerName, clientName, message);
+		Format(output, sizeof(output), "**%s** (%s) %s: `%s`", g_sServerName, steamID2, clientName, message);
 
 		Discord_SendMessage(g_sChatChannel, output);
 	}
@@ -1035,6 +1041,9 @@ Action CheckClientMessage(int client, const char[] command, const char[] text) {
 Action CheckClientCommand(int client, char[] cmd) {
 	char command[128];
 	strcopy(command, sizeof(command), cmd);
+
+	char steamID2[24];
+	GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2));
 
 	ArrayList commandSections = g_aSections[COMMAND];
 
@@ -1112,10 +1121,10 @@ Action CheckClientCommand(int client, char[] cmd) {
 
 					char output[256];
 					if (changed) {
-						Format(output, sizeof(output), "**%s** Command| %s: `%s` --> `%s` **Blocked**", g_sServerName, clientName, cmd, command);
+						Format(output, sizeof(output), "**%s** Command| (%s) %s: `%s` --> `%s` **Blocked**", g_sServerName, steamID2, clientName, cmd, command);
 					}
 					else {
-						Format(output, sizeof(output), "**%s** Command| %s: `%s`", g_sServerName, clientName, command);
+						Format(output, sizeof(output), "**%s** Command| (%s) %s: `%s`", g_sServerName, steamID2, clientName, command);
 					}
 
 					Discord_SendMessage(g_sChatChannel, output);
@@ -1162,7 +1171,7 @@ Action CheckClientCommand(int client, char[] cmd) {
 			Discord_EscapeString(_command, sizeof(_command));
 
 			char output[256];
-			Format(output, sizeof(output), "**%s** Command| %s: `%s`  -->  `%s`", g_sServerName, clientName, originalCommand, _command);
+			Format(output, sizeof(output), "**%s** Command| (%s) %s: `%s`  -->  `%s`", g_sServerName, steamID2, clientName, originalCommand, _command);
 
 			Discord_SendMessage(g_sChatChannel, output);
 		}
@@ -1179,7 +1188,7 @@ Action CheckClientCommand(int client, char[] cmd) {
 		Discord_EscapeString(command, sizeof(command));
 
 		char output[256];
-		Format(output, sizeof(output), "**%s** Command| %s: `%s`", g_sServerName, clientName, command);
+		Format(output, sizeof(output), "**%s** Command| (%s) %s: `%s`", g_sServerName, steamID2, clientName, command);
 
 		Discord_SendMessage(g_sChatChannel, output);
 	}
