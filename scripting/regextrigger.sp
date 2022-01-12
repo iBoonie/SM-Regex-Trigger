@@ -739,6 +739,52 @@ void ConnectNameCheck(int client) {
 	CheckClientName(client, clientName, sizeof(clientName), true);
 }
 
+void SpoofMsg(int client, const char[] command, const char[] text)
+{
+	char name[128];
+	GetClientName(client, name, sizeof(name));
+	
+	char color[10];
+	switch (GetClientTeam(client))
+	{
+		case TFTeam_Red: {
+			strcopy(color, sizeof(color), g_sRed);
+		}
+		case TFTeam_Blue: {
+			strcopy(color, sizeof(color), g_sBlue);
+		}
+	}
+	
+	if (StrEqual(command, "say_team"))
+	{
+		if (IsPlayerAlive(client))
+		{
+			PrintToChat(client, "\x01(TEAM) %s%s : \x01%s", color, name, text);
+		} else {
+			
+			if (view_as<TFTeam>(GetClientTeam(client)) == TFTeam_Spectator)
+			{
+				PrintToChat(client, "\x01(Spectator) %s%s : \x01%s", color, name, text);
+			} else {
+				PrintToChat(client, "\x01*DEAD*(TEAM) %s%s : \x01%s", color, name, text);
+			}
+		}
+	} else {
+		if (IsPlayerAlive(client))
+		{
+			PrintToChat(client, "%s%s : \x01%s", color, name, text);
+		} else {
+			
+			if (view_as<TFTeam>(GetClientTeam(client)) == TFTeam_Spectator)
+			{
+				PrintToChat(client, "\x01*SPEC* %s%s : \x01%s", color, name, text);
+			} else {
+				PrintToChat(client, "\x01*DEAD* %s%s : \x01%s", color, name, text);
+			}
+		}
+	}
+}
+
 Action CheckClientName(int client, char[] newName, int size, bool connecting = false) {
 	if (client < 1 || client > MaxClients || IsFakeClient(client)) {
 		return Plugin_Continue;
@@ -972,6 +1018,8 @@ Action CheckClientMessage(int client, const char[] command, const char[] text) {
 
 					Discord_SendMessage(g_sChatChannel, output);
 				}
+				
+				SpoofMsg(client, command, message);
 
 				return Plugin_Handled;
 			}
