@@ -19,7 +19,9 @@
 #include <tf2>
 #include <sourceirc>
 #include <discord>
+#tryinclude <sourcecomms>
 #define REQUIRE_PLUGIN
+
 
 enum {
 	NAME = 0,
@@ -741,6 +743,13 @@ void ConnectNameCheck(int client) {
 
 void SpoofMsg(int client, const char[] command, const char[] text)
 {
+	#if defined _sourcecomms_included
+		if (SourceComms_GetClientGagType(client) != bNot)
+		{
+			return;
+		}
+	#endif
+	
 	char name[128];
 	GetClientName(client, name, sizeof(name));
 	
